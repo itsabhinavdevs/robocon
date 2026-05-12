@@ -1,0 +1,505 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--surface3:#222d42;
+  --border:#1e2d45;--border2:#2a3d5c;
+  --green:#10b981;--green-dim:#064e3b;--green-text:#34d399;
+  --red:#ef4444;--red-dim:#450a0a;--red-text:#f87171;
+  --blue:#3b82f6;--blue-dim:#1e3a5f;--blue-text:#60a5fa;
+  --amber:#f59e0b;--amber-dim:#451a03;--amber-text:#fbbf24;
+  --purple:#8b5cf6;--purple-dim:#2e1065;--purple-text:#a78bfa;
+  --cyan:#06b6d4;--cyan-dim:#0c3b4a;--cyan-text:#22d3ee;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#475569;
+  --r:10px;--r-sm:6px;--r-lg:14px;
+}
+body{background:var(--bg);font-family:'Inter',sans-serif;color:var(--text);font-size:13px;padding:14px;min-height:100vh;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--surface);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--border);}
+.hdr-left{display:flex;align-items:center;gap:12px;}
+.logo{background:linear-gradient(135deg,var(--cyan),var(--blue));padding:5px 12px;border-radius:var(--r-sm);font-family:'JetBrains Mono',monospace;font-weight:600;font-size:16px;color:#fff;letter-spacing:1px;}
+.hdr-title{font-size:15px;font-weight:600;color:var(--text);letter-spacing:.3px;}
+.hdr-sub{font-size:10px;color:var(--text3);margin-top:2px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;}
+.phase-badge{padding:3px 12px;border-radius:20px;font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:1px;border:1px solid;text-transform:uppercase;}
+
+/* ── LAYOUT ── */
+.body{display:grid;grid-template-columns:295px 1fr;gap:12px;align-items:start;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:10px;}
+.card-title{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
+.card-title::before{content:'';width:3px;height:10px;border-radius:2px;background:var(--cyan);}
+
+/* ── GRID ── */
+.grid-label{font-size:9px;color:var(--text3);text-align:center;letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin:4px 0;}
+.grid-row{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:5px;}
+.block{border-radius:var(--r);padding:8px 4px;cursor:default;min-height:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:all .18s ease;border:1px solid var(--border);}
+.block:hover{border-color:var(--border2);}
+.block.clickable{cursor:pointer;}
+.block.clickable:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.4);}
+.block.clickable:active{transform:translateY(0);}
+.block-bg-bar{position:absolute;bottom:0;left:0;right:0;border-radius:0 0 var(--r) var(--r);opacity:.13;transition:height .3s;}
+.block-num{font-size:8px;font-weight:600;color:var(--text3);font-family:'JetBrains Mono',monospace;line-height:1;}
+.block-h{font-size:12px;font-weight:600;font-family:'JetBrains Mono',monospace;line-height:1.3;}
+.block-mm{font-size:8px;font-weight:400;}
+.block-icon{font-size:14px;line-height:1;margin-top:1px;}
+.block-tag{font-size:8px;font-weight:600;letter-spacing:.5px;font-family:'JetBrains Mono',monospace;}
+.robot-dot{width:13px;height:13px;border-radius:50%;margin:2px auto 0;position:relative;}
+.robot-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1px solid;opacity:.5;animation:ping 1s ease-out infinite;}
+@keyframes ping{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.6);opacity:0}}
+
+/* Block states */
+.b-empty {background:var(--surface2);}
+.b-r2kfs {background:linear-gradient(135deg,var(--green-dim),#083326);border-color:#1a5c42;}
+.b-fake  {background:linear-gradient(135deg,var(--red-dim),#330808);border-color:#5c1a1a;}
+.b-robot {background:linear-gradient(135deg,var(--blue-dim),#102040);border-color:#2a5280;box-shadow:0 0 14px rgba(59,130,246,.25);}
+.b-scan  {background:linear-gradient(135deg,var(--amber-dim),#2a1000);border-color:#6b3a0a;box-shadow:0 0 14px rgba(245,158,11,.2);}
+.b-picked{background:linear-gradient(135deg,#052e18,#04200f);border-color:#0d4a2a;}
+.b-pathed{background:linear-gradient(135deg,#0d1e35,var(--blue-dim));border-color:#1a3355;}
+
+/* ── LEGEND ── */
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text3);}
+.legend-dot{width:8px;height:8px;border-radius:2px;border:1px solid;}
+
+/* ── COUNTERS ── */
+.counters{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.counter{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:8px 6px;text-align:center;}
+.counter-val{font-size:18px;font-weight:600;font-family:'JetBrains Mono',monospace;line-height:1;}
+.counter-lbl{font-size:8px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-top:2px;}
+
+/* ── HINT ── */
+.hint{font-size:10px;color:var(--text3);line-height:1.6;padding:7px 9px;background:var(--surface2);border-radius:var(--r-sm);border-left:2px solid var(--border2);margin-bottom:10px;font-family:'JetBrains Mono',monospace;}
+
+/* ── BUTTONS ── */
+.btn-row{display:flex;flex-wrap:wrap;gap:6px;}
+.btn{padding:6px 14px;font-size:11px;font-weight:500;border-radius:var(--r-sm);cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.3px;transition:all .15s;border:1px solid;}
+.btn-primary{background:linear-gradient(135deg,#065f46,#047857);border-color:var(--green);color:var(--green-text);}
+.btn-primary:hover{background:linear-gradient(135deg,#047857,#059669);box-shadow:0 0 12px rgba(16,185,129,.3);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.btn-default{background:var(--surface2);border-color:var(--border2);color:var(--text2);}
+.btn-default:hover{background:var(--surface3);border-color:var(--cyan);color:var(--cyan-text);}
+.btn-danger{background:var(--red-dim);border-color:var(--red);color:var(--red-text);}
+.btn-danger:hover{box-shadow:0 0 10px rgba(239,68,68,.25);}
+.btn-warn{background:var(--amber-dim);border-color:var(--amber);color:var(--amber-text);}
+
+/* ── SPEED BTNS ── */
+.speed-row{display:flex;gap:5px;align-items:center;margin-top:8px;}
+.speed-lbl{font-size:9px;color:var(--text3);margin-right:2px;font-family:'JetBrains Mono',monospace;}
+.spd-btn{padding:2px 9px;font-size:9px;font-family:'JetBrains Mono',monospace;border-radius:20px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text3);transition:all .15s;}
+.spd-btn.active{background:var(--blue-dim);border-color:var(--blue);color:var(--blue-text);}
+
+/* ── KFS DOTS ── */
+.kfs-dots{display:flex;gap:5px;align-items:center;}
+.kfs-dot{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;border:1px solid;transition:all .3s;}
+.kfs-dot.filled{background:var(--green-dim);border-color:var(--green);color:var(--green-text);}
+.kfs-dot.empty2{background:var(--surface2);border-color:var(--border);color:transparent;}
+
+/* ── PROGRESS ── */
+.prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:7px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--blue));border-radius:2px;transition:width .3s;}
+
+/* ── ACTION CARD ── */
+.action-msg{font-size:13px;font-weight:500;line-height:1.5;margin-bottom:8px;font-family:'JetBrains Mono',monospace;}
+.frame-counter{font-size:9px;color:var(--text3);margin-left:auto;font-family:'JetBrains Mono',monospace;}
+
+/* ── LOG BOX ── */
+.logbox{height:300px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;}
+.log-empty{color:var(--text3);text-align:center;padding:24px 0;line-height:2.2;}
+
+/* ── SENSOR GRID ── */
+.sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sensor-card{background:var(--surface2);border-radius:var(--r-sm);padding:8px 10px;border:1px solid var(--border);border-left-width:2px;}
+.sensor-lbl{font-size:8px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;font-family:'JetBrains Mono',monospace;}
+.sensor-val{font-size:10.5px;color:var(--text2);font-family:'JetBrains Mono',monospace;word-break:break-word;line-height:1.5;}
+
+/* ── SUMMARY ── */
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;}
+.summary-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px;}
+.summary-lbl{font-size:8px;color:var(--text3);margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;}
+.summary-val{font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;}
+.order-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;}
+.order-lbl{font-size:8px;color:var(--text3);margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase;}
+.order-val{font-size:12px;color:var(--green-text);font-family:'JetBrains Mono',monospace;letter-spacing:.3px;}
+.summary-note{font-size:10px;color:var(--text3);line-height:1.6;margin-top:8px;padding:7px 9px;background:var(--surface2);border-radius:var(--r-sm);border-left:2px solid var(--border2);font-family:'JetBrains Mono',monospace;}
+
+/* ── COMPUTING PULSE ── */
+.computing{color:var(--amber-text);font-size:11px;font-family:'JetBrains Mono',monospace;margin-top:8px;animation:blink .8s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:10px 0;}
+</style>
+
+<div id="app"></div>
+
+<script>
+const H={1:200,2:400,3:200,4:400,5:600,6:400,7:200,8:400,9:200,10:400,11:600,12:400};
+const ADJ={1:[2,4],2:[1,3,5],3:[2,6],4:[1,5,7],5:[2,4,6,8],6:[3,5,9],7:[4,8,10],8:[5,7,9,11],9:[6,8,12],10:[7,11],11:[8,10,12],12:[9,11]};
+const MAX_CLIMB=200,ENTRANCE=[1,2,3],EXITS=[10,11,12],INF=1e9;
+const GRC={};
+for(let b=1;b<=12;b++) GRC[b]={r:Math.floor((b-1)/3),c:(b-1)%3};
+const GRID_ROWS=[[10,11,12],[7,8,9],[4,5,6],[1,2,3]];
+
+const manhat=(a,b)=>Math.abs(GRC[a].r-GRC[b].r)+Math.abs(GRC[a].c-GRC[b].c);
+function edgeCost(a,b,bl){if(bl.has(b))return INF;const d=Math.abs(H[a]-H[b]);return d>MAX_CLIMB?INF:1+(d/200)*.5;}
+function astar(s,g,bl){
+  if(s===g)return{cost:0,path:[s]};
+  const gc={},pr={},op=new Set([s]);
+  for(let i=1;i<=12;i++)gc[i]=INF;gc[s]=0;
+  while(op.size){
+    let cur=null,bf=INF;
+    for(const n of op){const f=gc[n]+manhat(n,g);if(f<bf){bf=f;cur=n;}}
+    op.delete(cur);
+    if(cur===g){const p=[];let c=g;while(c!==undefined){p.unshift(c);c=pr[c];}return{cost:gc[g],path:p};}
+    for(const nb of ADJ[cur]){const ec=edgeCost(cur,nb,bl);if(ec===INF)continue;const ng=gc[cur]+ec;if(ng<gc[nb]){gc[nb]=ng;pr[nb]=cur;op.add(nb);}}
+  }
+  return{cost:INF,path:[]};
+}
+function allPairs(bl){const C={},P={};for(let a=1;a<=12;a++)for(let b=1;b<=12;b++){const r=a===b?{cost:0,path:[a]}:astar(a,b,bl);C[`${a}~${b}`]=r.cost;P[`${a}~${b}`]=r.path;}return{C,P};}
+function perms(a){if(a.length<=1)return[[...a]];return a.flatMap((_,i)=>perms([...a.slice(0,i),...a.slice(i+1)]).map(p=>[a[i],...p]));}
+function getFacing(f,t){const dr=GRC[t].r-GRC[f].r,dc=GRC[t].c-GRC[f].c;if(dr>0)return'NORTH';if(dr<0)return'SOUTH';if(dc>0)return'EAST';return'WEST';}
+
+function runPlanning(bs){
+  const logs=[],push=(t,m)=>logs.push({t,m});
+  const r2=[],fk=[];for(let b=1;b<=12;b++){if(bs[b]==='r2kfs')r2.push(b);if(bs[b]==='fake')fk.push(b);}
+  const bl=new Set(fk);
+  push('h','╔══════════════════════════════════════╗');
+  push('h','║   MEIHUA FOREST PATH PLANNER  v2.0  ║');
+  push('h','╚══════════════════════════════════════╝');
+  push('sep','');
+  push('ph','[ PHASE 0 ]  LED screen matrix decode');
+  push('i',`  R2 KFS   → [ ${r2.join(', ')} ]`);
+  push('i',`  Fake KFS → [ ${fk.join(', ')||'none'} ]`);
+  if(r2.length!==4){push('e',`  ✗ FAIL: need 4 R2 KFS, got ${r2.length}`);return{logs,result:null};}
+  push('ok','  ✓ Validation OK — 4 R2 KFS confirmed');push('sep','');
+  push('ph','[ PHASE 1 ]  Graph construction');
+  push('d','  Heights (fixed, rulebook):');
+  push('d','  Row1(entrance): B1=200  B2=400  B3=200');
+  push('d','  Row2:           B4=400  B5=600  B6=400');
+  push('d','  Row3:           B7=200  B8=400  B9=200');
+  push('d','  Row4(exit):     B10=400 B11=600 B12=400');
+  push('i',`  Max climb: ${MAX_CLIMB}mm per step`);
+  const bad=[];for(let a=1;a<=12;a++)for(const b of ADJ[a])if(a<b&&Math.abs(H[a]-H[b])>MAX_CLIMB)bad.push(`B${a}↔B${b}`);
+  push('i',`  Height-blocked: ${bad.length?bad.join(' '):' none'}`);push('sep','');
+  push('ph','[ PHASE 2 ]  All-pairs A* (144 pairs)');
+  const{C,P}=allPairs(bl);
+  push('ok',`  ✓ Done — ${Object.values(C).filter(v=>v<INF).length}/144 reachable`);
+  push('d',`  B1→B12: ${C['1~12']<INF?C['1~12'].toFixed(2):'∞'}  [${(P['1~12']||[]).join('→')}]`);
+  push('d',`  B3→B10: ${C['3~10']<INF?C['3~10'].toFixed(2):'∞'}  [${(P['3~10']||[]).join('→')}]`);push('sep','');
+  push('ph','[ PHASE 3 ]  TSP — optimal visit order');
+  const eK=r2.filter(k=>ENTRANCE.includes(k));
+  push('i',`  Targets: ${r2.map(b=>`B${b}(${H[b]}mm)`).join('  ')}`);
+  push('c',`  Rule 4.4.14: entrance KFS = [${eK.map(b=>`B${b}`).join(',')||'none'}]`);
+  let ps=perms(r2);
+  if(eK.length){ps=ps.filter(p=>eK.includes(p[0]));push('c',`  → ${ps.length} valid perms (entrance-first)`);} else push('i',`  → All ${ps.length} perms`);
+  push('i',`  → ${ps.length}×${ENTRANCE.length}=${ps.length*ENTRANCE.length} combos to evaluate`);push('sep','');
+  let best={cost:INF,perm:null,plan:null,entry:null,exit:null};
+  for(const perm of ps){
+    for(const en of ENTRANCE){
+      let tc=0,cur=en,plan=[],ok=true;
+      for(const kb of perm){
+        const adj2=ADJ[kb].filter(n=>!bl.has(n));if(!adj2.length){ok=false;break;}
+        let bc=INF,bp=null;for(const a of adj2){if(C[`${cur}~${a}`]<bc){bc=C[`${cur}~${a}`];bp=a;}}
+        if(bc===INF){ok=false;break;}
+        plan.push({type:'move',from:cur,to:bp,path:[...P[`${cur}~${bp}`]],cost:bc});
+        plan.push({type:'pickup',stand:bp,kfs:kb,face:getFacing(bp,kb)});
+        tc+=bc;cur=bp;
+      }
+      if(!ok)continue;
+      let ec=INF,eb=null;for(const ex of EXITS){if(C[`${cur}~${ex}`]<ec){ec=C[`${cur}~${ex}`];eb=ex;}}
+      if(ec===INF)continue;
+      plan.push({type:'exit',from:cur,to:eb,path:[...P[`${cur}~${eb}`]],cost:ec});tc+=ec;
+      const nb=tc<best.cost;
+      push(nb?'best':'pm',`  [${perm.map(b=>`B${b}`).join('→')}] en=B${en} ex=B${eb}  cost=${tc.toFixed(2)}${nb?' ← NEW BEST':''}`);
+      if(nb)best={cost:tc,perm:[...perm],plan:[...plan],entry:en,exit:eb};
+    }
+  }
+  if(!best.plan){push('e','  ✗ No valid path found!');return{logs,result:null};}
+  push('sep','');
+  push('ok','╔══════════════════════════════════════╗');
+  push('ok',`║  OPTIMAL SOLUTION FOUND!             ║`);
+  push('ok',`║  Order : B${best.entry}→${best.perm.map(b=>`B${b}`).join('→')}  ║`);
+  push('ok',`║  Cost  : ${best.cost.toFixed(2)} units               ║`);
+  push('ok','╚══════════════════════════════════════╝');push('sep','');
+  push('ph','[ PHASE 4 ]  Execution plan');
+  best.plan.forEach((s,i)=>{
+    if(s.type==='move')push('st',`  #${i+1} MOVE   [${s.path.join('→')}]  cost=${s.cost.toFixed(2)}`);
+    else if(s.type==='pickup')push('pk',`  #${i+1} PICKUP stand=B${s.stand}  kfs=B${s.kfs}  face=${s.face}`);
+    else push('ex2',`  #${i+1} EXIT   [${s.path.join('→')}]  → B${s.to}`);
+  });
+  return{logs,result:{...best}};
+}
+
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1)+a);
+function buildFrames(plan,entry){
+  const frames=[];let path=[entry],picked=[];
+  frames.push({robot:entry,path:[...path],action:'ENTER',picked:[...picked],msg:`Robot enters forest at B${entry} (${H[entry]}mm)`,sensor:{odo:`X:0mm  Y:0mm  θ:0.0°`,imu:`pitch:0.0°  roll:0.0°`,cam:`Block B${entry} edges locked in depth cam`,fix:`Odometry zeroed at B${entry} block center`}});
+  for(const s of plan){
+    if(s.type==='move'||s.type==='exit'){
+      for(let i=1;i<s.path.length;i++){
+        const f=s.path[i-1],t=s.path[i],hd=H[t]-H[f],xe=rnd(-22,22),ye=rnd(-18,18);
+        path=[...path,t];
+        frames.push({robot:t,path:[...path],action:'MOVE',picked:[...picked],msg:`${s.type==='exit'?'Exiting:':'Moving:'}  B${f}(${H[f]}mm) → B${t}(${H[t]}mm)  Δh=${hd>0?'+':''}${hd}mm`,sensor:{odo:`X:${(GRC[t].c-GRC[entry].c)*1200}mm  Y:${(GRC[t].r-GRC[entry].r)*1200}mm`,imu:`pitch:${hd>0?'+':''}${(hd/200*2.8).toFixed(1)}°  roll:0.${rnd(0,4)}°`,cam:`B${t} edge: ΔX=${xe}mm  ΔY=${ye}mm`,fix:`Correction ΔX=${-xe}mm  ΔY=${-ye}mm → locked B${t}`}});
+      }
+    } else if(s.type==='pickup'){
+      const cf=(0.87+Math.random()*.11).toFixed(2);
+      frames.push({robot:s.stand,path:[...path],action:'SCAN',picked:[...picked],scanTarget:s.kfs,msg:`Camera scan: KFS on B${s.kfs}  (B${s.stand}, facing ${s.face})`,sensor:{odo:`stable`,imu:`pitch:0.1°  roll:0.1°`,cam:`YOLOv8-Nano: class=R2_KFS  conf=${cf}`,fix:`Confirmed real KFS — proceed with pickup`}});
+      picked=[...picked,s.kfs];
+      frames.push({robot:s.stand,path:[...path],action:'PICKUP',picked:[...picked],msg:`KFS picked from B${s.kfs} — total ${picked.length}/4`,sensor:{odo:`stable`,imu:`pitch:0.0°  roll:0.0°`,cam:`Gripper cam: KFS secured in holder`,fix:`Limit switch CLOSED | Force: ${rnd(9,14)}N`}});
+    }
+  }
+  frames.push({robot:frames[frames.length-1].robot,path:[...path],action:'DONE',picked:[...picked],msg:`Forest complete — all 4 KFS collected!`,sensor:{odo:`Exit block reached`,imu:`pitch rising — ramp detected`,cam:`Ramp structure in depth cam`,fix:`Region FSM: MEIHUA_FOREST → ON_RAMP`}});
+  return frames;
+}
+
+const LC={h:'#06b6d4',ph:'#e2e8f0',i:'#64748b',d:'#475569',ok:'#10b981',e:'#ef4444',c:'#f59e0b',best:'#f59e0b',pm:'#334155',st:'#3b82f6',pk:'#10b981',ex2:'#60a5fa',sep:'#1e2d45'};
+
+let ST={blocks:{},phase:'setup',logs:[],frames:[],fi:0,playing:false,speed:1100,result:null,timer:null};
+for(let i=1;i<=12;i++)ST.blocks[i]='empty';
+
+function getVis(id){
+  const{blocks,frames,fi}=ST,frame=frames[fi];
+  if(!frame)return blocks[id];
+  if(frame.robot===id)return'robot';
+  if(frame.scanTarget===id)return'scan';
+  if(frame.picked&&frame.picked.includes(id))return'picked';
+  if(frame.path&&frame.path.includes(id))return'pathed';
+  return blocks[id];
+}
+
+function phaseStyle(ph){
+  const m={setup:['#6366f1','#1e1b4b'],executing:['#10b981','#064e3b'],done:['#10b981','#052e18'],computing:['#f59e0b','#451a03']};
+  const[c,bg]=m[ph]||['#64748b','#1a2235'];
+  return`color:${c};background:${bg};border-color:${c};`;
+}
+
+function blockClass(vis,id){
+  const m={empty:'b-empty',r2kfs:'b-r2kfs',fake:'b-fake',robot:'b-robot',scan:'b-scan',picked:'b-picked',pathed:'b-pathed'};
+  return`block ${m[vis]||'b-empty'}${ST.phase==='setup'?' clickable':''}`;
+}
+
+function blockInner(id){
+  const vis=getVis(id),isKfs=ST.blocks[id]==='r2kfs',isFake=ST.blocks[id]==='fake';
+  const isPicked=ST.frames[ST.fi]&&ST.frames[ST.fi].picked&&ST.frames[ST.fi].picked.includes(id)&&isKfs;
+  const hc=H[id]===600?'var(--cyan-text)':H[id]===400?'#60a5fa':'var(--text3)';
+  let icon='';
+  if(vis==='robot') icon=`<div class="robot-dot" style="background:var(--blue);"></div><div class="robot-dot" style="display:none"></div>`;
+  else if(vis==='scan') icon=`<div class="block-tag" style="color:var(--amber-text);background:var(--amber-dim);padding:1px 5px;border-radius:3px;border:1px solid var(--amber);">CAM</div>`;
+  else if(isPicked) icon=`<div class="block-tag" style="color:var(--green-text);">✓ PICKED</div>`;
+  else if(isKfs) icon=`<div class="block-icon" style="color:var(--green-text);">◆</div>`;
+  else if(isFake) icon=`<div class="block-icon" style="color:var(--red-text);">✕</div>`;
+  const barH=(H[id]/600)*38;
+  const barC=H[id]===600?'var(--cyan)':H[id]===400?'var(--blue)':'var(--text3)';
+  return`<div class="block-bg-bar" style="height:${barH}%;background:${barC};"></div>
+    <div class="block-num">B${id}</div>
+    <div class="block-h" style="color:${hc};">${H[id]}<span class="block-mm">mm</span></div>
+    ${icon}`;
+}
+
+function render(){
+  const{blocks,phase,logs,frames,fi,playing,speed,result}=ST;
+  const frame=frames[fi];
+  const kfsCnt=Object.values(blocks).filter(s=>s==='r2kfs').length;
+  const fkCnt=Object.values(blocks).filter(s=>s==='fake').length;
+
+  // Grid
+  let gridHtml='';
+  for(const row of GRID_ROWS){
+    gridHtml+=`<div class="grid-row">`;
+    for(const id of row){
+      const vis=getVis(id);
+      gridHtml+=`<div class="${blockClass(vis,id)}" onclick="clickBlock(${id})">${blockInner(id)}</div>`;
+    }
+    gridHtml+='</div>';
+  }
+
+  // Controls
+  let ctrlHtml='',spd='';
+  if(phase==='setup') ctrlHtml+=`<button class="btn btn-primary" onclick="startPlan()" ${kfsCnt!==4?'disabled':''}>▶ Plan + execute</button>`;
+  if(phase==='executing'){
+    ctrlHtml+=`<button class="btn btn-default" onclick="togglePlay()">${playing?'⏸ Pause':'▶ Play'}</button>`;
+    ctrlHtml+=`<button class="btn btn-default" onclick="stepBack()">◀</button>`;
+    ctrlHtml+=`<button class="btn btn-default" onclick="stepFwd()">▶</button>`;
+  }
+  if(phase==='done') ctrlHtml+=`<button class="btn btn-warn" onclick="replay()">↺ Replay</button>`;
+  ctrlHtml+=`<button class="btn btn-danger" onclick="resetAll()">✕ Reset</button>`;
+  if(phase==='executing'||phase==='done'){
+    spd=`<div class="speed-row"><span class="speed-lbl">Speed:</span>${[['Fast',500],['Normal',1100],['Slow',2000]].map(([l,v])=>`<button class="spd-btn${speed===v?' active':''}" onclick="setSpeed(${v})">${l}</button>`).join('')}</div>`;
+  }
+
+  // Dots
+  const picked=(frame&&frame.picked)||[];
+  const dots=Array.from({length:4},(_,i)=>`<div class="kfs-dot ${picked.length>i?'filled':'empty2'}">${picked.length>i?'◆':''}</div>`).join('');
+
+  // Log
+  let logHtml=logs.length===0?`<div class="log-empty">[awaiting input]<br><span style="font-size:9px;">Place 4 R2 KFS then press Plan</span></div>`
+    :logs.map(l=>`<div style="color:${LC[l.t]||'#64748b'};white-space:pre;">${l.m}</div>`).join('');
+
+  // Action card
+  const aColor={MOVE:'var(--blue-text)',ENTER:'var(--text2)',SCAN:'var(--amber-text)',PICKUP:'var(--green-text)',DONE:'var(--green-text)',EXIT:'var(--cyan-text)'};
+  const ac=frame?aColor[frame.action]||'var(--text)':'';
+  const pct=frames.length?Math.round(((fi+1)/frames.length)*100):0;
+  const actionBorder=frame&&(frame.action==='PICKUP'||frame.action==='DONE')?'var(--green)':'var(--border)';
+
+  let actionHtml='';
+  if(frame){
+    actionHtml=`<div class="card" style="border-color:${actionBorder};">
+      <div class="card-title">Current action</div>
+      <div class="action-msg" style="color:${ac};">${frame.msg}</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div class="kfs-dots">${dots}</div>
+        <span style="font-size:9px;color:var(--text3);margin-left:4px;font-family:'JetBrains Mono',monospace;">KFS ${picked.length}/4</span>
+        <span class="frame-counter">frame ${fi+1}/${frames.length}</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;"></div></div>
+    </div>`;
+  }
+
+  // Sensor
+  let sensorHtml='';
+  if(frame){
+    const scards=[
+      ['Odometry',frame.sensor.odo,'var(--blue)'],
+      ['IMU / Gyro',frame.sensor.imu,'var(--purple)'],
+      ['Depth camera',frame.sensor.cam,'var(--cyan)'],
+      ['Correction applied',frame.sensor.fix,'var(--green)'],
+    ].map(([l,v,c])=>`<div class="sensor-card" style="border-left-color:${c};">
+      <div class="sensor-lbl" style="color:${c};">${l}</div>
+      <div class="sensor-val">${v}</div>
+    </div>`).join('');
+    sensorHtml=`<div class="card">
+      <div class="card-title" style="--accent:var(--purple);">Live sensor data</div>
+      <div class="sensor-grid">${scards}</div>
+    </div>`;
+  }
+
+  // Summary
+  let summaryHtml='';
+  if(result){
+    summaryHtml=`<div class="card">
+      <div class="card-title">Optimal path summary</div>
+      <div class="summary-grid">
+        ${[['Total cost',result.cost.toFixed(2)+' u','var(--cyan-text)'],['Steps',(frame&&frame.path?frame.path.length:'—')+' blocks','var(--text2)'],['Entry','B'+result.entry+' ('+H[result.entry]+'mm)','var(--text2)']].map(([l,v,c])=>`<div class="summary-card"><div class="summary-lbl">${l}</div><div class="summary-val" style="color:${c};">${v}</div></div>`).join('')}
+      </div>
+      <div class="order-card">
+        <div class="order-lbl">Optimal visit order</div>
+        <div class="order-val">B${result.entry} → ${result.perm.map(b=>`B${b}`).join(' → ')} → exit B${result.exit}</div>
+      </div>
+      <div class="summary-note">Edge cost = 1.0 + (Δh÷200)×0.5 &nbsp;|&nbsp; Fake KFS = cost ∞<br>Evaluated all permutations × ${ENTRANCE.length} entry blocks.</div>
+    </div>`;
+  }
+
+  document.getElementById('app').innerHTML=`
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="logo">R2</div>
+      <div>
+        <div class="hdr-title">Meihua Forest Path Planner</div>
+        <div class="hdr-sub">TSP-A★ OPTIMAL NAVIGATION SYSTEM</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span style="font-size:9px;color:var(--text3);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">REGION: MEIHUA_FOREST</span>
+      <span class="phase-badge" style="${phaseStyle(phase)}">${phase}</span>
+    </div>
+  </div>
+
+  <div class="body">
+    <!-- LEFT -->
+    <div>
+      <div class="card">
+        <div class="card-title">Forest grid — LED screen input</div>
+        <div class="grid-label">↑ EXIT → ARENA &nbsp;(blocks 10–12)</div>
+        ${gridHtml}
+        <div class="grid-label">↓ ENTRANCE ← MARTIAL CLUB &nbsp;(blocks 1–3)</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green-dim);border-color:var(--green);"></div>R2 KFS</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--red-dim);border-color:var(--red);"></div>Fake KFS</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blue-dim);border-color:var(--blue);"></div>Robot</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blue-dim);border-color:var(--border2);"></div>Path</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green-dim);border-color:var(--border2);"></div>Picked</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--amber-dim);border-color:var(--amber);"></div>Cam scan</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Controls</div>
+        <div class="counters">
+          ${[[`${kfsCnt}/4`,'R2 KFS',kfsCnt===4?'var(--green-text)':'var(--amber-text)'],[`${fkCnt}/1`,'Fake KFS','var(--red-text)'],[result?result.cost.toFixed(1):'—','Opt cost','var(--cyan-text)']].map(([v,l,c])=>`<div class="counter"><div class="counter-val" style="color:${c};">${v}</div><div class="counter-lbl">${l}</div></div>`).join('')}
+        </div>
+        ${phase==='setup'?`<div class="hint">Click block to cycle: empty → R2 KFS ◆ → Fake ✕ → empty<br>Place 4 R2 KFS to unlock planning.</div>`:''}
+        <div class="btn-row">${ctrlHtml}</div>
+        ${spd}
+        ${phase==='computing'?'<div class="computing">⟳ Computing optimal path...</div>':''}
+      </div>
+
+      ${actionHtml}
+      ${sensorHtml}
+    </div>
+
+    <!-- RIGHT -->
+    <div>
+      <div class="card">
+        <div class="card-title">Algorithm log — full decision trace</div>
+        <div class="logbox" id="logbox">${logHtml}</div>
+      </div>
+      ${summaryHtml}
+    </div>
+  </div>`;
+
+  const lb=document.getElementById('logbox');
+  if(lb)lb.scrollTop=lb.scrollHeight;
+}
+
+function clickBlock(id){
+  if(ST.phase!=='setup')return;
+  const cur=ST.blocks[id],kc=Object.values(ST.blocks).filter(s=>s==='r2kfs').length,fc=Object.values(ST.blocks).filter(s=>s==='fake').length;
+  let next='empty';
+  if(cur==='empty')next=kc<4?'r2kfs':fc<1?'fake':'empty';
+  else if(cur==='r2kfs')next=fc<1?'fake':'empty';
+  else next='empty';
+  ST.blocks={...ST.blocks,[id]:next};render();
+}
+
+function startPlan(){
+  if(Object.values(ST.blocks).filter(s=>s==='r2kfs').length!==4){alert('Place exactly 4 R2 KFS (◆) first!');return;}
+  ST.phase='computing';render();
+  setTimeout(()=>{
+    const{logs,result}=runPlanning(ST.blocks);
+    ST.logs=logs;
+    if(result){ST.frames=buildFrames(result.plan,result.entry);ST.result=result;ST.fi=0;ST.phase='executing';ST.playing=true;startTimer();}
+    else ST.phase='setup';
+    render();
+  },350);
+}
+
+function startTimer(){
+  if(ST.timer)clearInterval(ST.timer);
+  ST.timer=setInterval(()=>{
+    if(!ST.playing||ST.phase!=='executing'){clearInterval(ST.timer);return;}
+    if(ST.fi>=ST.frames.length-1){ST.playing=false;ST.phase='done';clearInterval(ST.timer);}
+    else ST.fi++;
+    render();
+  },ST.speed);
+}
+
+function togglePlay(){ST.playing=!ST.playing;if(ST.playing){ST.phase='executing';startTimer();}else clearInterval(ST.timer);render();}
+function stepBack(){ST.playing=false;clearInterval(ST.timer);ST.fi=Math.max(0,ST.fi-1);render();}
+function stepFwd(){ST.playing=false;clearInterval(ST.timer);ST.fi=Math.min(ST.frames.length-1,ST.fi+1);if(ST.fi===ST.frames.length-1)ST.phase='done';render();}
+function setSpeed(v){ST.speed=v;if(ST.playing)startTimer();render();}
+function replay(){ST.fi=0;ST.phase='executing';ST.playing=true;startTimer();render();}
+function resetAll(){
+  clearInterval(ST.timer);
+  ST={blocks:{},phase:'setup',logs:[],frames:[],fi:0,playing:false,speed:1100,result:null,timer:null};
+  for(let i=1;i<=12;i++)ST.blocks[i]='empty';render();
+}
+
+render();
+</script>
